@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>avalon</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="Scripts/tool/avalon-master/dist/avalon.js"></script>
+</head>
+<body>
+
+    <div ms-controller="controller">
+        <div style="border: 1px solid red;" ms-css-width="w" ms-css-height="h" ms-click="click" ms->
+        </div>
+        <p>{{firstName}} {{lastName}}</p>
+        <p>{{fullName}}</p>
+        <p>W:<input type="text" ms-duplex="w" data-duplex-event="change" /></p>
+        <p>W:<input type="text" ms-duplex="w" /></p>
+        <p>H:<input type="text" ms-duplex="h" /></p>
+    </div>
+
+    <script>
+
+        avalon.ready(function() {
+            var vm = avalon.define({
+                $id: "controller",
+                w: 100,
+                h:200,
+                firstName: "司徒",
+                lastName: "正美",
+                fullName: {//一个包含set或get的对象会被当成PropertyDescriptor，
+                    set: function (val) {//里面必须用this指向scope，不能使用scope
+                        var array = (val || "").split(" ");
+                        this.firstName = array[0] || "";
+                        this.lastName = array[1] || "";
+                    },
+                    get: function () {
+                        return this.firstName + " " + this.lastName;
+                    }
+                },
+                click: function () {
+                    vm.w = parseFloat(vm.w) + 10;
+                    vm.h = parseFloat(vm.h) + 10;
+                },
+                $skipAarray:["p"]
+            });
+
+            avalon.scan();
+
+        });
+        
+
+       
+
+       
+
+
+    </script>
+</body>
+</html>

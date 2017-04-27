@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Students>
+  <Student>
+    <Name>hechen</Name>
+    <Sex>男</Sex>
+    <Age>23</Age>
+  </Student>
+  <Student>
+    <Name>情缘</Name>
+    <Sex>男</Sex>
+    <Age>23</Age>
+  </Student>
+</Students>

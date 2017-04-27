@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<books>
+  <book>
+    <author>authorl1</author>
+    <author>authorl2</author>
+    <author>authorl3</author>
+    <title>LINQ in Action</title>
+  </book>
+</books>

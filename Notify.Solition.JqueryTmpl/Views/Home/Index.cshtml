@@ -1,0 +1,194 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+@section styles{
+    <style type="text/css">
+        body
+        {
+            padding: 10px;
+        }
+        table
+        {
+            border-collapse: collapse;
+        }
+    </style>
+}
+@section scripts
+{
+    <script id="myTemplate" type="text/x-jquery-tmpl">
+        <tr><td>${ID}</td><td>${Name}</td></tr>
+    </script>
+    <script id="compile1" type="text/x-jquery-tmpl">
+        {{tmpl 'cached'}}
+        <tr><td>${ID}</td><td>${Name}</td></tr>
+    </script>
+    <script id="compile2" type="type/x-jquery-tmpl">
+        <tr><td colspan="2">${Group}</td></tr>    
+    </script>
+    <script id="expression" type="type/x-jquery-tmpl">
+        <tr><td>${ID}</td><td>${Name}</td><td>${Langs.join('; ')}</td></tr>   
+    </script>
+    <script id="property" type="text/x-jquery-tmpl">
+        <tr><td>${ID}</td><td>${$data.Name}</td><td>${$item.getLangs('; ')}</td></tr> 
+    </script>
+    <script id="each" type="text/x-jquery-tmpl"> 
+          <li>ID: ${ID}; Name: ${Name};<br />Langs:<ul>{{each Langs}}<li>${$index + 1}: <label>${$value}. </label></li>{{/each}}</ul></li>
+    </script>
+    <script id="each2" type="text/x-jquery-tmpl"> 
+          <li>ID: ${ID}; Name: ${Name};<br />Langs:<ul>{{each(i,lang) Langs}}<li>${i + 1}: <label>${lang}. </label></li>{{/each}}</ul></li>
+    </script>
+    <script id="ifelse" type="text/x-jquery-tmpl"> 
+          <tr><td>${ID}</td><td>${Name}</td><td>{{if Langs.length > 1}}${Langs.join('; ')}{{else}}${Langs}{{/if}}</td></tr> 
+    </script>
+    <script id="html" type="text/x-jquery-tmpl"> 
+          <tr><td>${ID}</td><td>${Name}</td><td>{{html Ctrl}}</td></tr> 
+    </script>
+    <script id="tmpl1" type="text/x-jquery-tmpl">
+        <tr><td>${ID}</td><td>${Name}</td><td> {{tmpl($data) '#tmpl2'}}</td></tr>       
+    </script>
+    <script id="tmpl2" type="type/x-jquery-tmpl">
+        {{each Langs}}${$value} &nbsp;{{/each}}   
+    </script>
+    <script id="myTmpl" type="text/x-jquery-tmpl">
+    The following wraps and reorders some HTML content:
+    {{wrap "#tableWrapper"}}
+        <h3>One</h3>
+        <div>
+            First <b>content</b>
+        </div>
+        <h3>Two</h3>
+        <div>
+            And <em>more</em> <b>content</b>...
+        </div>
+    {{/wrap}}
+    </script>
+    <script id="tableWrapper" type="text/x-jquery-tmpl">
+    <table cellspacing="0" cellpadding="3" border="1"><tbody>
+        <tr>
+            {{each $item.html("h3", true)}}
+                <td>
+                    ${$value}
+                </td>
+            {{/each}}
+        </tr>
+        <tr>
+            {{each $item.html("div")}}
+                <td>
+                    {{html $value}}
+                </td>
+            {{/each}}
+        </tr>
+    </tbody></table>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var users = [{ ID: 'think8848', Name: 'Joseph Chan' }, { ID: 'aCloud', Name: 'Mary Cheung'}];
+            var userLangs = [{ ID: 'think8848', Name: 'Joseph Chan', Langs: ['Chinese', 'English'] }, { ID: 'aCloud', Name: 'Mary Cheung', Langs: ['Chinese', 'French']}];
+            $('#myTemplate').tmpl(users).appendTo('#rows');
+            $('#inline').tmpl(users).appendTo('#container');
+            $('#btnAjax').click(function () {
+                $.getJSON('@Url.Action("SampleData", "Home")', function (json) {
+                    $('#rows').empty();
+                    $('#myTemplate').tmpl(json).appendTo('#rows');
+                });
+            });
+            var groupUsers = [{ ID: 'think8848', Name: 'Joseph Chan', Group: 'Administrators' }, { ID: 'aCloud', Name: 'Mary Cheung', Group: 'Users'}];
+            $('#compile2').template('cached');
+            $('#compile1').tmpl(groupUsers).appendTo('#compileRows');
+            $('#expression').tmpl(userLangs).appendTo('#expressionRows');
+            $('#property').tmpl(userLangs, {
+                getLangs: function (separator) {
+                    return this.data.Langs.join(separator);
+                }
+            })
+            .appendTo('#propertyRows');
+            $('#each').tmpl(userLangs).appendTo('#eachList');
+            $('#each2').tmpl(userLangs).appendTo('#eachList2');
+            var langs = [{ ID: 'think8848', Name: 'Joseph Chan', Langs: ['Chinese', 'English'] }, { ID: 'aCloud', Name: 'Mary Cheung', Langs: ['Chinese']}];
+            $('#ifelse').tmpl(langs).appendTo('#ifelseRows');
+            var langs = [{ ID: 'think8848', Name: 'Joseph Chan', Ctrl: '<input type="button" value="Demo" />' }, { ID: 'aCloud', Name: 'Mary Cheung', Ctrl: '<input type="text" value="Demo" />'}];
+            $('#html').tmpl(langs).appendTo('#htmlRows');
+            $('#tmpl1').tmpl(userLangs).appendTo('#tmplRows');
+            $('#myTmpl').tmpl().appendTo('#wrapDemo');
+            $('tbody').delegate('tr', 'click', function () {
+                var item = $.tmplItem(this);
+                alert(item.data.Name);
+            });
+            var markup = '<tr><td>${ID}</td><td>${Name}</td></tr>';
+            $.template('template', markup);
+            $.tmpl('template', users).appendTo('#templateRows');
+        });
+    </script>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="rows">
+            </tbody>
+        </table>
+    </p>
+    <p>
+        <input id="btnAjax" type="button" value="Using Remote Data" />
+    </p>
+    <p>
+        <div id="container">
+        </div>
+        <div id="inline" style="display: none">
+            <label>
+                ${ID}</label>&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>
+                ${Name}</label><br />
+        </div>
+    </p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="compileRows">
+            </tbody>
+        </table>
+    </p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="expressionRows">
+            </tbody>
+        </table>
+    </p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="propertyRows">
+            </tbody>
+        </table>
+    </p>
+    <p>
+        <ul id="eachList">
+        </ul>
+    </p>
+    <p>
+        <ul id="eachList2">
+        </ul>
+    </p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="ifelseRows">
+            </tbody>
+        </table>
+    </p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="htmlRows">
+            </tbody>
+        </table>
+    </p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="tmplRows">
+            </tbody>
+        </table>
+    </p>
+<p>
+    <div id="wrapDemo">
+    </div>
+</p>
+    <p>
+        <table cellspacing="0" cellpadding="3" border="1">
+            <tbody id="templateRows">
+            </tbody>
+        </table>
+    </p>

@@ -1,0 +1,16 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="@Url.Content("Content/themes/base/site.css")" type="text/css" />
+    <link rel="stylesheet" href="@Url.Content("Content/themes/base/jquery.ui.css")" type="text/css" />
+    <script src="@Url.Content("Scripts/jquery.js")" type="text/javascript"></script>
+    <script src="@Url.Content("Scripts/jquery.ui.js")" type="text/javascript"></script>
+    <script src="@Url.Content("Scripts/jquery.tmpl.js")" type="text/javascript"></script>
+    @RenderSection("styles", false)
+    @RenderSection("scripts", false)
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>

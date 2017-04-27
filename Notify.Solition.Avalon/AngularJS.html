@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AngularJS</title>
+    <!--学习地址-->
+    <!--http://www.yiibai.com/angularjs/angularjs_includes.html-->
+    <!--http://docs.angularjs.cn/api/ng/filter/filter-->
+    <!--http://docs.angularjs.cn/api/ng-->
+    <!--推荐使用工具 vs2015 或 WebStorm-->
+    <!--加载框架-->
+    <script src="/Scripts/tool/angularjs/Angular.js"></script>
+    <script>
+        // 注册控制器
+        var mainApp = angular.module("mainApp", []);
+        mainApp.controller("Controller", function ($scope) {
+            $scope.model = {
+                title: "Angular",
+                fullName: function () {
+                    var obj = $scope.model;
+                    return obj.title + " name";
+                }
+            };
+            $scope.student = {
+                firstName: "MyStudend",
+                amount: 51
+            };
+        });
+        mainApp.factory('m', function () {
+            var factory = {};
+            factory.multiply = function (a, b) {
+                return a * b;
+            }
+            return factory;
+        });
+
+
+
+
+    </script>
+</head>
+<body ng-app="mainApp">
+    <h2>模型 - model</h2>
+    <p>
+        <b>模型是负责管理应用程序的数据。它响应来自视图的请求，同时也响应指令从控制器进行自我更新。</b>
+    </p>
+    <h2>视图 - view</h2>
+    <p>
+        <b>在一个特定的格式的演示数据，由控制器决定触发显示数据。它们是基于脚本的模板系统，如JSP，ASP，PHP，非常容易使用AJAX技术的集成。</b>
+    </p>
+    <h2>控制器 - controller</h2>
+    <p>
+        <b>控制器负责响应于用户输入并执行交互数据模型对象。控制器接收到输入，它验证输入，然后执行修改数据模型的状态的业务操作。</b>
+    </p>
+    <p>注意点：angular.module("mainApp", [])这样的注册只能有一次，其他地方使用会报错</p>
+    <p>ng-app：设定作用域</p>
+    <p>ng-model：设定模型变量</p>
+    <p>ng-controller:设置某个控制器的作用域</p>
+    <p>ng-bind：绑定模型</p>
+    <p>ng-init：初始化应用程序数据</p>
+    <p>ng-repeat：重复集合中的每个项目的HTML元素。用于迭代(循环)</p>
+    <p>ng-disabled:禁用</p>
+    <p>ng-show:显示</p>
+    <p>ng-hide:隐藏</p>
+    <p>ng-click:单击事件</p>
+    <p>ng-dbl-click:双击事件</p>
+    <p>ng-mousedown:当鼠标指针移动到元素上方，并按下鼠标按键时，会发生 mousedown 事件</p>
+    <p>ng-mouseup:当在元素上放松鼠标按钮时，会发生 mouseup 事件</p>
+    <p>ng-mouseenter:当鼠标指针穿过元素时，会发生 mouseenter 事件</p>
+    <p>ng-mouseleave:当鼠标指针离开元素时，会发生 mouseleave 事件</p>
+    <p>ng-mousemove:当鼠标指针在指定的元素中移动时，就会发生 mousemove 事件</p>
+    <p>ng-mouseover:当鼠标指针位于元素上方时，会发生 mouseover 事件</p>
+    <p>ng-keydown:当键盘或按钮被按下时，发生 keydown 事件</p>
+    <p>ng-keyup:当按钮被松开时，发生 keyup 事件。它发生在当前获得焦点的元素上</p>
+    <p>ng-keypress:当键盘或按钮被按下时，发生 keypress 事件</p>
+    <p>ng-change:当元素的值发生改变时，会发生 change 事件</p>
+
+    <!--控制器-->
+    <div ng-controller="Controller">
+        <p>模型1</p>
+        <p>
+            Hello {{'World'}} {{6666}}!
+        </p>
+        <p>模型2</p>
+        <p>
+            <input type="text" ng-model="name" placeholder="World" />
+            Hello {{name || 'World'}}!
+        </p>
+        <p>模型3</p>
+        <p>
+            <ul>
+                <li ng-repeat="item in [0, 1, 2, 3, 4, 5, 6, 7]">{{item}}
+                </li>
+            </ul>
+        </p>
+        <p>模型4</p>
+        <p>
+            {{model.title}}<br />
+            {{model.fullName()}}
+        </p>
+        <p>模型5</p>
+        <p>
+            <input ng-model="model.title" type="text" /><br />
+            <span ng-bind="model.title"></span>
+        </p>
+        <p>模型6</p>
+        <p>
+            <div ng-app="myapp01" ng-init="countries=[{locale:'en-US',name:'United States'},{locale:'en-GB',name:'United Kingdom'},{locale:'en-FR',name:'France'}]">
+                {{countries}}
+                <br />
+                {{countries[0].name}} 
+            </div>
+        </p>
+        <script>
+            //自定义注册过滤器
+            mainApp.filter('filter', function () {
+                return function (input) {
+                    if (input) {
+                        return 'filter:\"' + input + '"';
+                    }
+                    return '';
+                }
+            });
+        </script>
+        <p>模型7</p>
+        <p>
+            大写过滤: {{student.firstName | uppercase}}<br />
+            小写过滤: {{student.firstName | lowercase}}<br />
+            货币过滤: {{student.amount | currency}}<br />
+            自定义过滤: {{student.firstName | filter}}<br />
+            排序过滤:<br />
+            <ul ng-repeat="i in [{name:'b'}, {name:'ab'}, {name:'a'}, {name:'bs'}] | orderBy:'name'">
+                <li>{{i.name}}</li>
+            </ul>
+        </p>
+        <p>模型8</p>
+        <p ng-controller="TestController">
+            <input type="checkbox" ng-model="enableDisableButton" />Disable Button
+            <input type="radio" ng-model="enableDisableButton" />Disable Button
+            <button ng-disabled="enableDisableButton">Click Me!</button>
+            <br />
+            <input type="checkbox" ng-model="showHide1" />Show Button
+            <button ng-show="showHide1">Click Me!</button>
+            <br />
+            <input type="checkbox" ng-model="showHide2" />Hide Button
+            <button ng-hide="showHide2">Click Me!</button>
+            <br />
+            <div ng-controller="TestController">
+                <p>Total click: {{ clickCounter }}</p>
+                <button ng-click="clickCounter = clickCounter + 1">Click Me!</button>
+                <button ng-click="clickTest()">Click Me!</button>
+            </div>
+            <script>
+                mainApp.controller("TestController", function ($scope) {
+                    $scope.clickTest = function () {
+                        $scope.clickCounter = $scope.clickCounter || 0;
+                        $scope.clickCounter = $scope.clickCounter + 1;
+                    };
+                });
+            </script>
+        </p>
+        <p>模型9</p>
+        <p>
+            <script>
+                // 注册工厂
+                mainApp.factory('MathService', function () {
+                    var factory = {};
+                    factory.multiply = function (a, b) {
+                        return a * b;
+                    }
+                    return factory;
+                });
+
+                //注册服务
+                mainApp.service('CalcService', function (MathService) {
+                    this.square = function (a) {
+                        return MathService.multiply(a, a);
+                    }
+                });
+
+                mainApp.controller('CalcController', function ($scope, CalcService) {
+                    $scope.square = function () {
+                        $scope.result = CalcService.square($scope.number);
+                    }
+                });
+            </script>
+            <div ng-controller="CalcController">
+                <p>
+                    Enter a number:
+                <input type="number" ng-model="number" />
+                    <button ng-click="square()">X<sup>2</sup></button>
+                <p>Result: {{result}}</p>
+            </div>
+        </p>
+        <p>
+            <script>
+                //值
+                mainApp.value("defaultInput", 5);
+                //常量
+                mainApp.constant("configParam", "constant value");
+                mainApp.controller('CalcController', function ($scope, CalcService, defaultInput) {
+                    $scope.number = defaultInput;
+                    $scope.result = CalcService.square($scope.number);
+                    $scope.square = function () {
+                        $scope.result = CalcService.square($scope.number);
+                    }
+                });
+            </script>
+        </p>
+        <p>模型10</p>
+        <p>
+            <script>
+                //Create a directive, first parameter is the html element to be attached.	  
+                //We are attaching student html tag. 
+                //This directive will be activated as soon as any student element is encountered in html
+                mainApp.directive('student', function () {
+                    //define the directive object
+                    var directive = {};
+                    //restrict = E, signifies that directive is Element directive
+                    directive.restrict = 'E';
+                    //template replaces the complete element with its text. 
+                    directive.template = "Student: <b>{{student.name}}</b> , Roll No: <b>{{student.rollno}}</b>";
+                    //scope is used to distinguish each student element based on criteria.
+                    directive.scope = {
+                        student: "=name"
+                    }
+                    //compile is called during application initialization. AngularJS calls it once when html page is loaded.
+                    directive.compile = function (element, attributes) {
+                        element.css("border", "1px solid #cccccc");
+                        //linkFunction is linked with each element with scope to get the element specific data.
+                        var linkFunction = function ($scope, element, attributes) {
+                            element.html("Student: <b>" + $scope.student.name + "</b> , Roll No: <b>" + $scope.student.rollno + "</b><br/>");
+                            element.css("background-color", "#ff00ff");
+                        }
+                        return linkFunction;
+                    }
+                    return directive;
+                });
+                mainApp.controller('StudentController', function ($scope) {
+                    $scope.Mahesh = {};
+                    $scope.Mahesh.name = "Mahesh Parashar";
+                    $scope.Mahesh.rollno = 1;
+
+                    $scope.Piyush = {};
+                    $scope.Piyush.name = "Piyush Parashar";
+                    $scope.Piyush.rollno = 2;
+                });
+            </script>
+            <div ng-app="mainApp" ng-controller="StudentController">
+                <student name="Mahesh"></student>
+                <br />
+                <student name="Piyush"></student>
+            </div>
+        </p>
+    </div>
+</body>
+</html>

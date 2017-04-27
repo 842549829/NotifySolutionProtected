@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "title";
+}
+<link href="~/WebForm/css.css" rel="stylesheet" />
+<input type="button" value="Test" id="test" />
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+<script src="~/Scripts/json2.js"></script>
+<script>
+
+    $(function () {
+
+        var obj = document.getElementById("test");
+        obj.style.backgroundImage = "url('/Content/Images/124.png')";
+
+        $("#test").click(function () {
+            sendRequest("/Default/Test/", { "beginDateTime": "2014-10-12 10:10:10" }, null, function (d) {
+                alert(d);
+            }, function (e) {
+                alert(e);
+            }, null);
+        });
+
+    });
+
+
+    // 发送服务器请求
+    function sendRequest(url, parameter, beforeSend, callback, error, complete) {
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: JSON.stringify(parameter),
+            dataType: "JSON",
+            contentType: "application/json",
+            beforeSend: beforeSend,
+            success: callback,
+            error: function (e) {
+
+
+            },
+            complete: complete
+        });
+    }
+</script>

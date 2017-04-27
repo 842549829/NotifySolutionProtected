@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>T</title>
+    <script src="Scripts/jquery.js"></script>
+    <script src="Scripts/jquery.tmpl.js"></script>
+    <script id="inline" type="text/x-jquery-tmpl">
+        <div>
+            ${$item.getinto($data.ID)}
+            <ul>
+                <li>${$data.ID}<br />
+                    ${$data.Name}<br />
+                    <ul>
+                        {{each(i,item) Langs}}
+                        <li onclick="aaa();">
+                            {{if i >= 1 }}
+                            ${item.AZ}<br />
+                            {{/if}}
+                            ${item.City}
+                        </li>
+                        {{/each}}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </script>
+    <script>
+        $(function () {
+            var userLangs = [{ ID: 'think8848', Name: 'Joseph Chan', Langs: [{ AZ: "a", City: "zz" }, { AZ: "xx", City: "cc" }] }, { ID: 'aCloud', Name: 'Mary Cheung', Langs: [{ AZ: "大家都很好", City: "成都" }, { AZ: "打孔", City: "北京" }] }];
+            $('#inline').tmpl(userLangs, {
+                getinto: function (id) {
+                    if (id == "think8848") {
+                        return "xxx";
+                    } else {
+                        return "PPPPPPPPPPPPPPPPPPPPP";
+                    }
+                }
+            }).appendTo($("body"));
+        });
+
+        function aaa() {
+            alert("aaa");
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

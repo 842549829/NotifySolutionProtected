@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>武林加点模拟器</title>
+<script type="text/javascript" src="./js/core.js"></script>
+<script type="text/javascript" src="./js/data.js"></script>
+<script type="text/javascript" src="./js/skillstr.js"></script>
+<script type="text/javascript" src="./js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+	var profImgPath="./proficon/";
+	var raceArray = ["人族枪系（戟神、刀君、修罗）", "人族剑系（剑圣、天剑、邪皇）", "人族医系（神算、医师、明王）", "人族法系（天师、蛊王、魔尊）", 
+	                 "魔族隐杀（潜行、暗影）", "魔族斗魂（鬼斩、烈刃）", "魔族御魄（帝江）", "魔族狂魔（玄冥、影舞）", "魔族巫祝（地藏）", "魔族寒星（神火、飞羽）"];
+	var raceDescArray = ["jishen,daojun,xiuluo|cainiao,youxia,qianghao",
+	                     "jiansheng,tianjian,xiehuang|cainiao,youxia,jianke",
+	                     "mingwang,yixian,shensuan|cainiao,sanren,yishi",
+	                     "tianshi,guwang,mozun|cainiao,sanren,shushi",
+	                     "qianxing,anying|moling,zhanling,yinsha",
+	                     "guizhan,lieren|moling,zhanling,douhun",
+	                     "dijiang|moling,zhanling,yupo",
+	                     "xuanming,yingwu|moling,mowu,kuangmo",
+	                     "dizang|moling,mowu,wuzhu",
+	                     "shenhuo,feiyu|moling,mowu,hanxing"];
+	var currentRace = "";
+	
+	$(function(document) {
+		
+		for (var l = 0; l < raceArray.length; l++) {
+			var race  = raceArray[l];
+			var s = race.split("（")[1].split("）")[0].split("、");
+			
+			var htmlStr = "<span id='"+raceDescArray[l]+"' class='race'>";
+			for (var m = 0; m < s.length; m++) {
+				htmlStr += "<img src='"+profImgPath+s[m]+".jpg' title='"+race+"' />";
+			}
+			$("#zhiyeDiv").append(htmlStr);
+		}
+		$(".race").bind("click", function(event){
+			var clickTargetId = event.currentTarget.id;
+			if (currentRace == "") {
+				currentRace = clickTargetId;
+				createSkillTree(clickTargetId);
+			} else if (currentRace != clickTargetId) {
+				if (confirm("你已选择了职业："+raceArray[raceDescArray.indexOf(currentRace)]+"，确定要更换到" + event.target.title +"吗？")) {
+					currentRace = clickTargetId;
+					createSkillTree(clickTargetId);
+				}
+			}
+		});
+		
+		//$($(".race")[1]).click();//测试用，完成后删除
+	});
+	
+	var coverStyle = "rgba(0, 0, 0, 0.4)";
+	var hideStyle = "rgba(0, 0, 0, 0)";
+	function createSkillTree(s) {
+		$("#content").fadeOut(400, function() {
+			$("#content").html("");
+			snNameArray.length = 0;
+			snObjectArray.length = 0;
+			
+			//先初始一个职业的技能树
+			var profNameArr = s.split("|");
+			if (profNameArr.length == 2) {
+				var profLeftNameArr = profNameArr[0].split(",");//三转职业
+				for (var i = 0; i < profLeftNameArr.length; i++) {
+					var profLeftId = eval(profLeftNameArr[i] + ".id");
+					var profLeftName = eval(profLeftNameArr[i] + ".name");
+					var profLeftMinCount = eval(profLeftNameArr[i] + ".minCount");
+					var profLeftSkills = eval(profLeftNameArr[i] + ".skills");
+					var profLeft = new SkillTree();
+					profLeft.setValues(profLeftId, profLeftName, profLeftMinCount, profLeftSkills);
+					profLeft.setIfThree(true);//三转标记，非三转凭此进行隐藏
+					$("#content").append(profLeft.toString());
+				}
+				var profRightNameArr = profNameArr[1].split(",");
+				for (var i = 0; i < profRightNameArr.length; i++) {
+					var profRightId = eval(profRightNameArr[i] + ".id");
+					var profRightName = eval(profRightNameArr[i] + ".name");
+					var profRightMinCount = eval(profRightNameArr[i] + ".minCount");
+					var profRightSkills = eval(profRightNameArr[i] + ".skills");
+					var profRight = new SkillTree();
+					profRight.setValues(profRightId, profRightName, profRightMinCount, profRightSkills);
+					$("#content").append(profRight.toString());
+				}
+				
+				drawLine();
+	
+				dealThree();
+				$("#content").fadeIn();
+				
+				//此方法将来用做加点 重点
+				$(".skillNode").bind("click", function () {
+				    debugger;
+					var sn = snObjectArray[snNameArray.indexOf(this.id)];
+					var leftNum = parseInt($("#leftNum").html());
+					if (sn.level < sn.maxNum && leftNum > 0) {
+						if (sn.level == 0 && sn.reqNum == 10 && leftNum < 10) {//技能点是否足够
+							return;
+						} 
+						if (sn.reqLvlArray[sn.level] > parseInt($("#levelNum").val())) {//等级是否足够
+							return;
+						}
+						if (sn.prevArray[0] == "first") {
+							var $prevSTTitleDiv = $("#content").children("div [minCount="+sn.prevArray[1]+"]").children(".skillsTreeTitleDiv");
+							var $totalNumSpan = $prevSTTitleDiv.children(".totalNumSpanInSkillTree");
+							if (parseInt($totalNumSpan.html()) < parseInt(sn.prevArray[1])) {
+								alert("上一职业："+$prevSTTitleDiv.html().substring(0, $prevSTTitleDiv.html().indexOf("<")) + " 所加技能点小于 " + sn.prevArray[1]);
+							}
+						}
+						
+						sn.level++;
+						
+						reload(this.id);
+					}
+				});
+				
+				//右击减技能
+				$(".skillNode").bind("contextmenu", function() {
+					var sn = snObjectArray[snNameArray.indexOf(this.id)];
+					if (sn.level>0) {
+						sn.level--;
+						
+						reload(this.id);
+					}
+				});
+				
+				$(".skillNode").hover(function(event) {//鼠标放到技能上显示技能说明
+					var $this = $(this);
+					var h = $("#title").css("height");
+					showSkillDesc(this.id, event.pageX, event.pageY-parseInt(h.substring(0, h.indexOf("px")))-26);//skillsTreeTitleDiv 的高是 26px 
+				}, function() {
+					$("#skillDescDiv").hide();
+				});
+			} else {
+				alert("所选职业对应类别出错，请检查数据");
+				return;
+			}
+			reload(null);
+		});
+	}
+	
+	function showSkillDesc(id, marginLeft, marginTop) {
+		var s = eval("snObjectArray[snNameArray.indexOf(\"" + id + "\")].showDesc()");
+
+		$descDiv = $("#skillDescDiv");
+		$descDiv.html(s);
+		
+		var descDivWidth = $descDiv.css("width");
+		var descDivHeight = $descDiv.css("height");
+		
+		var $parent = $("#content");//#content并不是sn的父亲辈的（他是爷爷辈的），但显示的时候要尽量不让显示div出#content的范围
+		var parentWidth = $parent.css("width");
+		var parentHeight = $parent.css("height");
+		if (plus(plus(marginLeft, descDivWidth), "-" + parentWidth) > 0) {
+			marginLeft = plus(plus(marginLeft, "-" + descDivWidth), - 40);
+		}
+		if (plus(plus(marginTop, descDivHeight), "-" + parentHeight) > 0) {
+			marginTop = plus(marginTop, "-" + descDivHeight);
+		}
+		if (marginTop < 0) {
+			marginTop = 0;
+		}
+		
+		$descDiv.css("margin-left", marginLeft);
+		$descDiv.css("margin-top", marginTop);
+
+		$descDiv.fadeIn();
+	}
+	
+	function plus(v1, v2) {
+		v1 = v1 + "";
+		v2 = v2 + "";
+		return parseInt(v1) + parseInt(v2);
+	}
+
+	var fillStyle = "rgb(60,255,60)";
+	function drawLine() {
+		for (var i = 0; i < snNameArray.length; i++) {
+			var snTo = snObjectArray[i];
+			var $parent = $("#"+snTo.name).parent();
+			var canvas = null;
+			var children = $parent.children();
+			for (var j = 0; j < children.length; j++) {
+				if (children[j].className == "canvasClass") {
+					canvas = children[j];
+					break;
+				}
+			}
+			if (!canvas) {
+				canvas = document.createElement("canvas");
+				canvas.className = "canvasClass";
+				canvas.width = parseInt($parent.css("width"));
+				canvas.height = parseInt($parent.css("height"))-26;
+				$parent[0].appendChild(canvas);
+			}
+			
+			var context = canvas.getContext("2d");
+			context.fillStyle = fillStyle;
+			
+			if (snTo.prevArray[0] != "first") {
+				var snFrom = snObjectArray[snNameArray.indexOf(snTo.prevArray[0])];
+				if (snTo.prevArray[2] == "leftdown") {
+					context.fillRect(plus(snTo.marginLeft, 17), plus(snFrom.marginTop, 17), plus(plus(snFrom.marginLeft, "-"+snTo.marginLeft), -17), 6);
+					context.fillRect(plus(snTo.marginLeft, 17), plus(snFrom.marginTop, 17), 6, plus(plus(snTo.marginTop, "-"+snFrom.marginTop), -17));
+				} else if (snTo.prevArray[2] == "rightdown") {
+					context.fillRect(plus(snFrom.marginLeft, 40), plus(snFrom.marginTop, 17), plus(plus(snTo.marginLeft, "-"+snFrom.marginLeft), -17), 6);
+					context.fillRect(plus(snTo.marginLeft, 17), plus(snFrom.marginTop, 17), 6, plus(plus(snTo.marginTop, "-"+snFrom.marginTop), -17));
+				} else if (snTo.prevArray[2] == "right") {
+					context.fillRect(plus(snFrom.marginLeft, 40), plus(snFrom.marginTop, 17), plus(plus(snTo.marginLeft, "-"+snFrom.marginLeft), -40), 6);
+				} else if (snTo.prevArray[2] == "downleftdown") {
+					context.fillRect(plus(snFrom.marginLeft, 17), plus(snFrom.marginTop, 40), 6, plus(plus(snTo.marginTop, "-" + snFrom.marginTop), -40)/2);
+					context.fillRect(plus(snTo.marginLeft, 17), plus(plus(snFrom.marginTop, 40), plus(plus(snTo.marginTop, "-" + snFrom.marginTop), -40)/2), plus(snFrom.marginLeft, "-"+snTo.marginLeft), 6);
+					context.fillRect(plus(snTo.marginLeft, 17), plus(plus(snFrom.marginTop, 40), plus(plus(snTo.marginTop, "-" + snFrom.marginTop), -40)/2), 6, plus(plus(snTo.marginTop, "-"+snFrom.marginTop), -17));
+				} else if (snTo.prevArray[2] == "down") {
+					context.fillRect(plus(snFrom.marginLeft, 17), plus(snFrom.marginTop, 40), 6, plus(plus(snTo.marginTop, "-" + snFrom.marginTop), -40));
+				}
+			}
+		}
+	}
+	function dealThree() {
+		var onlyShowThree = this["target"].checked;
+		var st = $(".skillsTree");
+		for (var i = 0; i < st.length; i++) {
+			var $toHideObject = $(st[i]);
+			if (onlyShowThree && $toHideObject.attr("isThree") == "false" && $toHideObject.css("display") != "none") {
+				$toHideObject.fadeOut();
+			} else if (!onlyShowThree && $toHideObject.attr("isThree") == "false" && $toHideObject.css("display") == "none") {
+				$toHideObject.fadeIn();
+			}
+		}
+	}
+	
+	function reload(showId) {
+		var $sts = $("#content").children();
+		$sts = reSort($sts);//从一转到三转，这样菜鸟直接在位置0 便于在到了游侠的时候 想取菜鸟已加点数就方便了
+		
+		var totalNum = 0;
+		var levelNum = parseInt($("#levelNum").val());
+		levelNum = levelNum > 130 ? (levelNum - 130) * 2 + 130 : levelNum;
+		
+		for (var j = 0; j < $sts.length; j++) {
+			var $skillTree = $($sts[j]);
+			var $totalSpan = $skillTree.children(".skillsTreeTitleDiv").children(".totalNumSpanInSkillTree");
+			var $skillNodes = $skillTree.children(".skillNode");
+			var total = 0;
+			for (var k = 0; k < $skillNodes.length; k++) {
+				var sn = snObjectArray[snNameArray.indexOf($skillNodes[k].id)];
+				
+				var maxLevel = 0;
+				for (var i1 = 0; i1 < sn.level; i1++) {
+					if (sn.reqLvlArray[i1] > levelNum) {
+						break;
+					}
+					maxLevel = i1+1;
+				}
+				if (sn.level > maxLevel) {
+					sn.level = maxLevel;
+				}
+				
+				if (sn.prevArray[0] == "first") {
+					var $prevSkillTree = null;
+					var prevNum = 0;
+					if (sn.prevArray[1] == "6") {
+						$prevSkillTree = $($sts[0]);
+					} else if (sn.prevArray[1] == "13") {
+						$prevSkillTree = $($sts[1]);
+					} else if (sn.prevArray[1] == "20") {
+						$prevSkillTree = $($sts[2]);
+					} 
+					
+					//todo 查看$prevSkillTree里所加的总技能点数大于等于sn.prevArray(1);
+					if ($prevSkillTree != null) {
+						var $prevTotalSpan = $prevSkillTree.children(".skillsTreeTitleDiv").children(".totalNumSpanInSkillTree");
+						prevNum = parseInt($prevTotalSpan.html());
+					} 
+
+					if (prevNum < parseInt(sn.prevArray[1])) {
+						sn.setLevel(0, true);
+					}
+				} else {
+					var prevSkillNode = snObjectArray[snNameArray.indexOf(sn.prevArray[0])];
+					if (prevSkillNode != null && prevSkillNode.level < parseInt(sn.prevArray[1])) {
+						sn.setLevel(0, true);
+					}
+				}
+				
+				//2014年5月18日13:20:02 为了避免过多循环影响性能，我决定给sn加个next属性，又要浪费时间写脚本了
+				//2014年5月18日14:13:59 写完了 将近一小时，娘的
+			}
+			
+			for (var n = 0; n < $skillNodes.length; n++) {
+				var sno = snObjectArray[snNameArray.indexOf($skillNodes[n].id)];
+				total += sno.level;
+				if (sno.level > 0 && sno.reqNum == 10) {
+					total += 9;
+				}
+			}
+			$totalSpan.html(total + "");
+			totalNum += total;
+		}
+		
+		$("#leftNum").html(levelNum + 20 -totalNum);
+		
+		for (var i = 0; i < snNameArray.length; i++) {
+			$skillNode = $("#"+snNameArray[i]);
+			var $coverDiv = $skillNode.children(".coverDiv");
+			
+			if (snObjectArray[i].level > 0 && $coverDiv.css("background-color") != hideStyle) {
+				$coverDiv.css("background-color", hideStyle);
+			} else if (snObjectArray[i].level == 0 && $coverDiv.css("background-color") != coverStyle) {
+				$coverDiv.css("background-color", coverStyle);
+			}
+			$coverDiv.html("<br/>&nbsp;"+snObjectArray[i].level); 
+		}
+		
+		if (showId) {
+			$descDiv = $("#skillDescDiv");
+			if ($descDiv.attr("display") != "none") {
+				var s = eval("snObjectArray[snNameArray.indexOf(\"" + showId + "\")].showDesc()");
+				$descDiv.html(s);
+			}
+		}
+	}
+	function reSort(array) {
+		var result = new Array(array.length);
+		var flag = 3;
+		for (var i = 0; i < array.length; i++) {
+			if ($(array[i]).attr("minCount") == "6") {
+				result.splice(0, 1, array[i]);
+			} else if ($(array[i]).attr("minCount") == "13") {
+				result.splice(1, 1, array[i]);
+			} else if ($(array[i]).attr("minCount") == "20") {
+				result.splice(2, 1, array[i]);
+			} else {
+				result.splice(flag, 1, array[i]);
+				flag++;
+			}  
+		}
+		return result;
+	}
+</script>
+<style type="text/css">
+body {
+	font-family: "微软雅黑";
+	font-size: 14px;
+	color: #ffffff;
+	padding: 0 0 0 0;
+}
+
+#content {
+	position: absolute;
+	z-index: 0;
+}
+
+#skillDescDiv {
+	display: none;
+	border: solid #fca206 1px;
+	width: auto;
+	background-color: rgba(186, 149, 21, 0.8);
+	box-shadow: 3px 3px 6px #f2d908;
+	position: absolute;
+	z-index: 999;
+	padding: 5px 5px 5px 5px;
+	border-radius: 5px;
+}
+
+.skillNode {
+	width: 40px;
+	height: 40px;
+	border: solid #8f8d6a 1px;
+	border-radius: 3px;
+	position: absolute;
+	float: left;
+	cursor: pointer;
+}
+
+.coverDiv {
+	width : 40px;
+	height : 40px;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.skillsTree {
+	margin-left: 10px;
+	margin-top: 10px;
+	border: solid orange 2px;
+	width: 240px;
+	float: left;
+	height: 674px;
+	border-radius: 5px;
+	padding: 10px 10px 10px 10px;
+}
+
+.skillsTreeTitleDiv {
+	height: 26px;
+	width: 100%;
+	font-size: 20px;
+	text-align: center;
+	color: black;
+}
+
+#title {
+	color: black;
+	height: auto;
+	text-align: center;
+	padding: 10px 10px 10px 10px;
+	font-size: 16px;
+}
+
+#levelNum {
+	width: 40px;
+	text-align: center;
+}
+span {
+	margin-left: 10px;
+}
+.race {
+	cursor: pointer;
+}
+.canvasClass {
+}
+.totalNumSpanInSkillTree {
+	float: right;
+	width: 26px;
+	font-size: 16px;
+	color: orange;
+}
+#leftNum {
+	color: red;
+}
+</style>
+</head>
+<body oncontextmenu="return false;">
+	<div id="title">
+		<div>
+			<span>等级：<input type="text" value="140" width="6" id="levelNum" onchange="reload()" /></span>
+			<span><input id="target" type="checkbox" onchange="dealThree(this)" >只显示三转职业</span>
+			<span>剩余技能点数：<span id="leftNum">170</span></span>
+		</div>
+		<div id="zhiyeDiv"></div>
+	</div>
+	<div id="content"></div>
+	<div id="skillDescDiv"></div>
+</body>
+</html>

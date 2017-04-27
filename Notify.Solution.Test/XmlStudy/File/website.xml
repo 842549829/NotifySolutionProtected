@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<links>
+  <link>
+    <url>http://www.baidu.com</url>
+    <name>百度</name>
+  </link>
+  <link>
+    <url>http://www.taobao.com</url>
+    <name>淘宝</name>
+  </link>
+  <link>
+    <url>http://www.qunaer.com</url>
+    <name>去哪儿</name>
+  </link>
+  <link>
+    <url>http://www.720u.com</url>
+    <name>去哪游</name>
+  </link>
+</links>
